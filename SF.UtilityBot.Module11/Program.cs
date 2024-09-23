@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text;
 using Telegram.Bot;
+using SF.UtilityBot.Module11.Configuration;
+using SF.UtilityBot.Module11.Controllers;
+using SF.UtilityBot.Module11.Services;
 
 namespace SF.UtilityBot.Module11
 {
@@ -26,11 +29,31 @@ namespace SF.UtilityBot.Module11
 
         static void ConfigureServices(IServiceCollection services)
         {
+            AppSettings appSettings = BuildAppSettings();
+            services.AddSingleton(BuildAppSettings());
+
+            //Подключаем хранилище пользовательских данных в памяти
+            services.AddSingleton<IStorage, MemoryStorage>();
+
+            //Подключаем контроллеры сообщений и кнопок
+            services.AddTransient<DefaultMessageController>();
+            services.AddTransient<TextMessageController>();
+            services.AddTransient<InlineKeyboardController>();
+
             // Регистрируем объект TelegramBotClient с токеном подключения
             services.AddSingleton<ITelegramBotClient>(provider => new
-            TelegramBotClient("7477165269:AAHJjwtxhEVc6ZNXxaxYcYsT8XU7u6Zkz3E"));
+            TelegramBotClient(appSettings.BotToken));
+
             // Регистрируем постоянно активный сервис бота
             services.AddHostedService<Bot>();
+        }
+
+        static AppSettings BuildAppSettings()
+        {
+            return new AppSettings()
+            {
+                BotToken = "7258438892:AAEH7Tj1-RPz17B6JUsToJORqBOY6aa3rcE",
+            };  
         }
     }
 }
